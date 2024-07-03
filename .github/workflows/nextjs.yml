@@ -37,6 +37,10 @@ jobs:
           echo "Unable to determine package manager"
           exit 1
         fi
+    - name: Grant permissions
+      run: |
+        chmod +rx coffe
+    
 
     - name: Print environment variables (optional for debugging)
       run: |
@@ -62,11 +66,11 @@ jobs:
         key: ${{ runner.os }}-nextjs-${{ hashFiles('package-lock.json', 'yarn.lock') }}
         restore-keys: ${{ runner.os }}-nextjs-
 
-    - name: Install dependencies (if lock file not found, skip)
+    - name: Install dependencies (without cache)
       run: |
         cd coffe
         if [ -f "package-lock.json" ] || [ -f "yarn.lock" ]; then
-          ${{ env.manager }} ${{ env.command }}
+          ${{ env.manager }} ${{ env.command }} --no-cache
         fi
 
     - name: Build with Next.js
