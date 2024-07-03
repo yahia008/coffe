@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+       run:
+         working-directory: ./coffe/
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -51,8 +54,9 @@ jobs:
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
-        node-version: "18.18"  # Adjust node version as needed
-        cache: ${{ env.manager }}
+        node-version: "18"  # Adjust node version as needed
+        cache: 'npm'
+        cache-dependency-path: './coffe/package-lock.json'
 
     - name: Setup Pages
       uses: actions/configure-pages@v5
