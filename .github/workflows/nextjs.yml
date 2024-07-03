@@ -18,59 +18,67 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Detect package manager
-        id: detect-package-manager
-        run: |
-          cd coffe
-          if [ -f "yarn.lock" ]; then
-            echo "manager=yarn" >> $GITHUB_ENV
-            echo "command=install" >> $GITHUB_ENV
-            echo "runner=yarn" >> $GITHUB_ENV
-          elif [ -f "package-lock.json" ]; then
-            echo "manager=npm" >> $GITHUB_ENV
-            echo "command=ci" >> $GITHUB_ENV
-            echo "runner=npx --no-install" >> $GITHUB_ENV
-          else
-            echo "Unable to determine package manager"
-            exit 1
-          fi
+    - name: Detect package manager
+      id: detect-package-manager
+      run: |
+        cd coffe
+        if [ -f "yarn.lock" ]; then
+          echo "manager=yarn" >> $GITHUB_ENV
+          echo "command=install" >> $GITHUB_ENV
+          echo "runner=yarn" >> $GITHUB_ENV
+        elif [ -f "package-lock.json" ]; then
+          echo "manager=npm" >> $GITHUB_ENV
+          echo "command=ci" >> $GITHUB_ENV
+          echo "runner=npx --no-install" >> $GITHUB_ENV
+        else
+          echo "Unable to determine package manager"
+          exit 1
+        fi
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"  # Adjust node version as needed
-          cache: ${{ env.manager }}
+    - name: Print environment variables (optional for debugging)
+      run: |
+        echo "manager: ${{ env.manager }}"
+        echo "command: ${{ env.command }}"
+        echo "runner: ${{ env.runner }}"
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-        with:
-          static_site_generator: next
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: "18"  # Adjust node version as needed
+        cache: ${{ env.manager }}
 
-      - name: Restore cache
-        uses: actions/cache@v2
-        with:
-          path: /.next/cache
-          key: ${{ runner.os }}-nextjs-${{ hashFiles('/package-lock.json', '/yarn.lock') }}
-          restore-keys: ${{ runner.os }}-nextjs-
+    - name: Setup Pages
+      uses: actions/configure-pages@v5
+      with:
+        static_site_generator: next
 
-      - name: Install dependencies
-        run: |
-          cd coffe
+    - name: Restore cache
+      uses: actions/cache@v2
+      with:
+        path: coffe/.next/cache
+        key: ${{ runner.os }}-nextjs-${{ hashFiles('coffe/package-lock.json', 'coffe/yarn.lock') }}
+        restore-keys: ${{ runner.os }}-nextjs-
+
+    - name: Install dependencies (if lock file not found, skip)
+      run: |
+        cd coffe
+        if [ -f "package-lock.json" ] || [ -f "yarn.lock" ]; then
           ${{ env.manager }} ${{ env.command }}
+        fi
 
-      - name: Build with Next.js
-        run: |
-          cd coffe
-          ${{ env.runner }} next build && ${{ env.runner }} next export
+    - name: Build with Next.js
+      run: |
+        cd coffe
+        ${{ env.runner }} next build && ${{ env.runner }} next export
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: nextjs-output
-          path: coffe/out
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: nextjs-output
+        path: coffe/out
 
   deploy:
     environment:
@@ -79,7 +87,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
