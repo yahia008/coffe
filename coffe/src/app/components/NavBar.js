@@ -61,7 +61,7 @@ const NavBar = () => {
         }
       >
         {/* Mobile Logo */}
-        <h1 className='w-full text-3xl font-bold text-[#00df9a] m-4'>REACT.</h1>
+        <h1 className='w-full text-3xl font-bold text-[#00df9a] m-4'>COFFE.</h1>
 
         {/* Mobile Navigation Items */}
         {navItems.map(item => (
